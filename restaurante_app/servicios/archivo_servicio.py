@@ -1,54 +1,65 @@
 import json
 import os
 from typing import List
-from restaurante_app.modelos.producto import Producto
+from modelos.producto import Producto
+from modelos.usuario import Usuario
+from modelos.venta import Venta
 
 class ArchivoServicio:
-    def __init__(self, ruta_archivo: str = os.path.join("restaurante_app", "datos", "productos.json")) -> None:
-        self.ruta_archivo: str = ruta_archivo
+    
+    # Construye la ruta absoluta a la carpeta "datos" dentro del paquete restaurante_app
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    DIR_DATOS = os.path.join(BASE_DIR, "datos")
+    
+    RUTA_PRODUCTOS = os.path.join(DIR_DATOS, "productos.json")
+    RUTA_USUARIOS = os.path.join(DIR_DATOS, "usuarios.json")
+    RUTA_VENTAS = os.path.join(DIR_DATOS, "ventas.json")
+
+    def __init__(self) -> None:
+        if not os.path.exists(self.DIR_DATOS):
+            os.makedirs(self.DIR_DATOS)
+
+    # --- PRODUCTOS ---
+    def guardar_productos(self, productos: List[Producto]) -> None:
+        with open(self.RUTA_PRODUCTOS, "w", encoding="utf-8") as f:
+            json.dump([p.a_diccionario() for p in productos], f, indent=4, ensure_ascii=False)
 
     def cargar_productos(self) -> List[Producto]:
-        """Recupera los datos del archivo JSON y devuelve una lista de objetos Producto."""
-        productos_recuperados: List[Producto] = []
-
+        if not os.path.exists(self.RUTA_PRODUCTOS):
+            return []
         try:
-            with open(self.ruta_archivo, "r", encoding="utf-8") as archivo:
-                contenido = json.load(archivo)
-                if isinstance(contenido, list):
-                    for registro in contenido:
-                        try:
-                            prod = Producto.desde_diccionario(registro)
-                            productos_recuperados.append(prod)
-                        except (KeyError, ValueError) as err:
-                            print(f"[Advertencia] Se omitió un registro defectuoso: {err}")
-                return productos_recuperados
-
-        except FileNotFoundError:
-            print("[Aviso] No se encontró 'productos.json'. Se iniciará con una lista vacía.")
-            return []
-        except json.JSONDecodeError:
-            print("[Error] El archivo 'productos.json' tiene un formato inválido o está dañado. Iniciando con catálogo vacío.")
-            return []
-        except PermissionError:
-            print("[Error] Permisos insuficientes para acceder a 'productos.json'.")
+            with open(self.RUTA_PRODUCTOS, "r", encoding="utf-8") as f:
+                datos = json.load(f)
+                return [Producto.desde_diccionario(item) for item in datos]
+        except (FileNotFoundError, json.JSONDecodeError, KeyError, ValueError):
             return []
 
-    def guardar_productos(self, lista_productos: List[Producto]) -> bool:
-        """Convierte los objetos Producto a diccionarios y los almacena en el archivo JSON."""
+    # --- USUARIOS ---
+    def guardar_usuarios(self, usuarios: List[Usuario]) -> None:
+        with open(self.RUTA_USUARIOS, "w", encoding="utf-8") as f:
+            json.dump([u.a_diccionario() for u in usuarios], f, indent=4, ensure_ascii=False)
+
+    def cargar_usuarios(self) -> List[Usuario]:
+        if not os.path.exists(self.RUTA_USUARIOS):
+            return []
         try:
-            directorio = os.path.dirname(self.ruta_archivo)
-            if directorio and not os.path.exists(directorio):
-                os.makedirs(directorio, exist_ok=True)
+            with open(self.RUTA_USUARIOS, "r", encoding="utf-8") as f:
+                datos = json.load(f)
+                return [Usuario.desde_diccionario(item) for item in datos]
+        except (FileNotFoundError, json.JSONDecodeError, KeyError, ValueError):
+            return []
 
-            datos = [prod.a_diccionario() for prod in lista_productos]
+    # --- VENTAS ---
+    def guardar_ventas(self, ventas: List[Venta]) -> None:
+        with open(self.RUTA_VENTAS, "w", encoding="utf-8") as f:
+            json.dump([v.a_diccionario() for v in ventas], f, indent=4, ensure_ascii=False)
 
-            with open(self.ruta_archivo, "w", encoding="utf-8") as archivo:
-                json.dump(datos, archivo, ensure_ascii=False, indent=4)
-            return True
-
-        except PermissionError:
-            print("[Error] No hay permisos de escritura para actualizar 'productos.json'.")
-            return False
-        except Exception as e:
-            print(f"[Error inesperado al guardar datos]: {e}")
-            return False
+    def cargar_ventas(self) -> List[Venta]:
+        if not os.path.exists(self.RUTA_VENTAS):
+            return []
+        try:
+            with open(self.RUTA_VENTAS, "r", encoding="utf-8") as f:
+                datos = json.load(f)
+                return [Venta.desde_diccionario(item) for item in datos]
+        except (FileNotFoundError, json.JSONDecodeError, KeyError, ValueError):
+            return []

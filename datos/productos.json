@@ -1,0 +1,23 @@
+[
+    {
+        "codigo": "P01",
+        "nombre": "Hamburguesa",
+        "categoria": "Fuerte",
+        "precio": 5.5,
+        "stock": 8
+    },
+    {
+        "codigo": "P03",
+        "nombre": "Carne asada",
+        "categoria": "Fuerte",
+        "precio": 8.8,
+        "stock": 1
+    },
+    {
+        "codigo": "P06",
+        "nombre": "Lasaña",
+        "categoria": "Fuerte",
+        "precio": 9.5,
+        "stock": 2
+    }
+]

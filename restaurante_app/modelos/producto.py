@@ -1,40 +1,50 @@
 from typing import Dict, Any
 
 class Producto:
-    def __init__(self, codigo: str, nombre: str, categoria: str, precio: float) -> None:
-        if not codigo or not nombre or not categoria:
-            raise ValueError("El código, nombre y categoría no pueden estar vacíos.")
+    """Clase que representa un producto dentro del menú del restaurante."""
+
+    def __init__(self, codigo: str, nombre: str, categoria: str, precio: float, stock: int = 0) -> None:
+        if not codigo or not nombre:
+            raise ValueError("El código y el nombre del producto no pueden estar vacíos.")
         if precio <= 0:
-            raise ValueError("El precio debe ser un número mayor a cero.")
+            raise ValueError("El precio debe ser un número positivo.")
+        if stock < 0:
+            raise ValueError("El stock no puede ser negativo.")
 
         self.codigo: str = codigo
         self.nombre: str = nombre
         self.categoria: str = categoria
         self.precio: float = precio
+        self.stock: int = stock
 
-    def mostrar_informacion(self) -> str:
-        return f"[{self.categoria.upper()}] Cód: {self.codigo} | {self.nombre} - Precio: ${self.precio:.2f}"
+    def vender(self, cantidad: int) -> None:
+        """Disminuye el stock del producto tras una venta válida."""
+        if cantidad <= 0:
+            raise ValueError("La cantidad a vender debe ser mayor a cero.")
+        if cantidad > self.stock:
+            raise ValueError("No hay suficiente stock disponible.")
+        self.stock -= cantidad
 
     def a_diccionario(self) -> Dict[str, Any]:
-        """Convierte el objeto Producto a un diccionario compatible con JSON."""
+        """Convierte el objeto a un diccionario compatible con JSON."""
         return {
             "codigo": self.codigo,
             "nombre": self.nombre,
             "categoria": self.categoria,
-            "precio": self.precio
+            "precio": self.precio,
+            "stock": self.stock
         }
 
-    @staticmethod
-    def desde_diccionario(datos: Dict[str, Any]) -> "Producto":
+    @classmethod
+    def desde_diccionario(cls, datos: Dict[str, Any]) -> "Producto":
         """Reconstruye un objeto Producto desde un diccionario."""
-        try:
-            return Producto(
-                codigo=str(datos["codigo"]),
-                nombre=str(datos["nombre"]),
-                categoria=str(datos["categoria"]),
-                precio=float(datos["precio"])
-            )
-        except KeyError as e:
-            raise KeyError(f"Clave faltante en el registro JSON: {e}")
-        except ValueError:
-            raise ValueError("El precio registrado en el JSON no es un valor numérico válido.")
+        return cls(
+            codigo=datos["codigo"],
+            nombre=datos["nombre"],
+            categoria=datos["categoria"],
+            precio=float(datos["precio"]),
+            stock=int(datos.get("stock", 0))
+        )
+
+    def mostrar_informacion(self) -> str:
+        return f"[{self.categoria.upper()}] Cód: {self.codigo} | {self.nombre} - Precio: ${self.precio:.2f} | Stock: {self.stock}"
