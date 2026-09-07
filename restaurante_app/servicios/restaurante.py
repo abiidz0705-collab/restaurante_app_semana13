@@ -1,77 +1,94 @@
-from typing import List, Optional
+from typing import List, Dict, Optional
+from servicios.archivo_servicio import ArchivoServicio
 from modelos.producto import Producto
 from modelos.usuario import Usuario
 from modelos.venta import Venta
 
 class Restaurante:
-    """Administra la lógica de negocio del sistema."""
+    def __init__(self):
+        self.archivo_servicio = ArchivoServicio()
+        
+        # Colecciones principales (Listas)
+        self.productos: List[Producto] = self.archivo_servicio.cargar_productos()
+        self.usuarios: List[Usuario] = self.archivo_servicio.cargar_usuarios()
+        self.ventas: List[Venta] = self.archivo_servicio.cargar_ventas()
+        
+        # Índices auxiliares para optimización en memoria (Diccionarios)
+        self._productos_index: Dict[str, Producto] = {}
+        self._usuarios_index: Dict[str, Usuario] = {}
+        self._ventas_por_usuario_index: Dict[str, List[Venta]] = {}
+        
+        # Reconstrucción inicial de índices
+        self._reconstruir_indices()
 
-    def __init__(self) -> None:
-        self.lista_productos: List[Producto] = []
-        self.lista_usuarios: List[Usuario] = []
-        self.lista_ventas: List[Venta] = []
+    def _reconstruir_indices(self):
+        """Pobla los diccionarios auxiliares a partir de las listas cargadas desde los JSON."""
+        self._productos_index = {p.codigo: p for p in self.productos}
+        self._usuarios_index = {u.identificacion: u for u in self.usuarios}
+        
+        self._ventas_por_usuario_index = {}
+        for venta in self.ventas:
+            if venta.usuario_id not in self._ventas_por_usuario_index:
+                self._ventas_por_usuario_index[venta.usuario_id] = []
+            self._ventas_por_usuario_index[venta.usuario_id].append(venta)
 
-    # Carga inicial
-    def cargar_datos(self, productos: List[Producto], usuarios: List[Usuario], ventas: List[Venta]) -> None:
-        self.lista_productos = productos
-        self.lista_usuarios = usuarios
-        self.lista_ventas = ventas
+    # Búsquedas optimizadas O(1)
+    def buscar_producto(self, codigo: str) -> Optional[Producto]:
+        return self._productos_index.get(codigo)
 
-    # --- USUARIOS ---
-    def registrar_usuario(self, usuario: Usuario) -> bool:
-        if self.buscar_usuario_por_id(usuario.identificacion) is None:
-            self.lista_usuarios.append(usuario)
-            return True
-        return False
+    def buscar_usuario(self, identificacion: str) -> Optional[Usuario]:
+        return self._usuarios_index.get(identificacion)
 
-    def buscar_usuario_por_id(self, identificacion: str) -> Optional[Usuario]:
-        for u in self.lista_usuarios:
-            if u.identificacion == identificacion:
-                return u
-        return None
+    def registrar_usuario(self, usuario: Usuario):
+        if usuario.identificacion in self._usuarios_index:
+            raise ValueError(f"El usuario con ID '{usuario.identificacion}' ya está registrado.")
+        
+        # Sincronización: lista + índice
+        self.usuarios.append(usuario)
+        self._usuarios_index[usuario.identificacion] = usuario
+        self.archivo_servicio.guardar_usuarios(self.usuarios)
 
-    def obtener_usuarios(self) -> List[Usuario]:
-        return self.lista_usuarios
+    def registrar_producto(self, producto: Producto):
+        if producto.codigo in self._productos_index:
+            raise ValueError(f"El producto con código '{producto.codigo}' ya existe.")
+        
+        # Sincronización: lista + índice
+        self.productos.append(producto)
+        self._productos_index[producto.codigo] = producto
+        self.archivo_servicio.guardar_productos(self.productos)
 
-    # --- PRODUCTOS ---
-    def registrar_producto(self, producto: Producto) -> bool:
-        if self.buscar_producto_por_codigo(producto.codigo) is None:
-            self.lista_productos.append(producto)
-            return True
-        return False
+    def realizar_venta(self, usuario_id: str, producto_codigo: str, cantidad: int) -> Venta:
+        if cantidad <= 0:
+            raise ValueError("La cantidad debe ser mayor a cero.")
+            
+        usuario = self.buscar_usuario(usuario_id)
+        if not usuario:
+            raise ValueError(f"No existe un usuario registrado con ID '{usuario_id}'.")
+            
+        producto = self.buscar_producto(producto_codigo)
+        if not producto:
+            raise ValueError(f"No existe un producto con el código '{producto_codigo}'.")
+            
+        if producto.stock < cantidad:
+            raise ValueError(f"Stock insuficiente. Stock actual: {producto.stock}")
 
-    def buscar_producto_por_codigo(self, codigo: str) -> Optional[Producto]:
-        for p in self.lista_productos:
-            if p.codigo == codigo:
-                return p
-        return None
+        # Actualización de stock
+        producto.stock -= cantidad
 
-    def obtener_productos(self) -> List[Producto]:
-        return self.lista_productos
+        nueva_venta = Venta(usuario_id, producto_codigo, cantidad)
+        
+        # Sincronización de lista e índice de ventas
+        self.ventas.append(nueva_venta)
+        if usuario_id not in self._ventas_por_usuario_index:
+            self._ventas_por_usuario_index[usuario_id] = []
+        self._ventas_por_usuario_index[usuario_id].append(nueva_venta)
 
-    # --- VENTAS ---
-    def vender_producto(self, codigo_producto: str, identificacion_usuario: str, cantidad: int) -> bool:
-        usuario = self.buscar_usuario_por_id(identificacion_usuario)
-        producto = self.buscar_producto_por_codigo(codigo_producto)
+        # Persistencia en JSON
+        self.archivo_servicio.guardar_productos(self.productos)
+        self.archivo_servicio.guardar_ventas(self.ventas)
+        
+        return nueva_venta
 
-        if usuario is None or producto is None:
-            return False
-
-        if cantidad <= 0 or producto.stock < cantidad:
-            return False
-
-        # Descontar stock y registrar venta
-        producto.vender(cantidad)
-        venta = Venta(usuario.identificacion, producto.codigo, cantidad)
-        self.lista_ventas.append(venta)
-        return True
-
-    def obtener_ventas_por_usuario(self, identificacion_usuario: str) -> List[Venta]:
-        ventas_usuario: List[Venta] = []
-        for venta in self.lista_ventas:
-            if venta.usuario_id == identificacion_usuario:
-                ventas_usuario.append(venta)
-        return ventas_usuario
-
-    def obtener_ventas(self) -> List[Venta]:
-        return self.lista_ventas
+    def obtener_ventas_por_usuario(self, usuario_id: str) -> List[Venta]:
+        """Consulta optimizada O(1) usando el índice agrupado por usuario."""
+        return self._ventas_por_usuario_index.get(usuario_id, [])

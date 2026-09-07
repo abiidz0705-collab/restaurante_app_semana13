@@ -1,18 +1,12 @@
-# Restaurante App - Semana 11
+# Restaurante App - Semana 12
 
 **Estudiante:** Abigail Deleg
 **Asignatura:** Programación Orientada a Objetos  
-**Semana:** 11  
+**Semana:** 12
 
----
+Proyecto desarrollado para la asignatura de Programación Orientada a Objetos. Esta entrega corresponde a la evolución del sistema `restaurante_app`, enfocada en la mejora de rendimiento en búsquedas y consultas mediante la incorporación de estructuras auxiliares en memoria.
 
-## Descripción del Sistema
-
-`restaurante_app` es una aplicación modular orientada a objetos diseñada para la gestión integral de un restaurante. En esta versión (Semana 11), el sistema evoluciona para administrar las relaciones reales del negocio: vincula a los **Usuarios** con los **Productos** mediante la creación de **Ventas**, controlando el stock disponible de forma dinámica y manteniendo la persistencia física de toda la información en archivos JSON.
-
----
-
-## Estructura del Proyecto
+## Arquitectura del Proyecto
 
 ```text
 restaurante_app/
