@@ -2,6 +2,10 @@ import tkinter as tk
 from pathlib import Path
 
 from servicios.archivo_servicio import ArchivoServicio
+import tkinter as tk
+from pathlib import Path
+
+from servicios.archivo_servicio import ArchivoServicio
 from servicios.restaurante_servicio import RestauranteServicio
 from ui.login_view import LoginView
 from ui.main_view import MainView
@@ -31,7 +35,7 @@ class AplicacionRestaurante:
         vista = LoginView(
             self.root,
             self.restaurante_servicio,
-            self.mostrar_interfaz_principal,
+            self.mostrar_interfaz_principal
         )
         self.cambiar_vista(vista)
 
@@ -39,7 +43,7 @@ class AplicacionRestaurante:
         vista = MainView(
             self.root,
             self.restaurante_servicio,
-            self.mostrar_login,
+            self.mostrar_login
         )
         self.cambiar_vista(vista)
 
