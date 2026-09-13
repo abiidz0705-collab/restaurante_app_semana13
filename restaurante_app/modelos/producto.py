@@ -5,14 +5,6 @@ class Producto:
         self.precio = precio
         self.stock = stock
 
-    def a_diccionario(self) -> dict:
-        return {
-            "codigo": self.codigo,
-            "nombre": self.nombre,
-            "precio": self.precio,
-            "stock": self.stock
-        }
-
     @classmethod
     def desde_diccionario(cls, datos: dict):
         return cls(

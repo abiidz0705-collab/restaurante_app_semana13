@@ -2,7 +2,13 @@
     {
         "codigo": "P001",
         "nombre": "Almuerzo Ejecutivo",
-        "precio": 3.5,
+        "precio": 3.50,
         "stock": 17
+    },
+    {
+        "codigo": "P002",
+        "nombre": "Jugo Natural",
+        "precio": 1.25,
+        "stock": 30
     }
 ]

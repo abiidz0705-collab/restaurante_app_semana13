@@ -1,41 +1,37 @@
+import tkinter as tk
+from servicios.restaurante_servicio import RestauranteServicio
+from ui.login_view import LoginView
+from ui.main_view import MainView
+
+class AppController:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Restaurante App - Tkinter GUI")
+        self.root.geometry("700x450")
+        self.root.resizable(False, False)
+
+        # Iniciar servicio central
+        self.servicio = RestauranteServicio()
+
+        self.vista_actual = None
+        self.mostrar_login()
+
+    def mostrar_login(self):
+        if self.vista_actual:
+            self.vista_actual.destroy()
+
+        self.vista_actual = LoginView(self.root, self.servicio, on_login_success=self.mostrar_main)
+
+    def mostrar_main(self):
+        if self.vista_actual:
+            self.vista_actual.destroy()
+
+        self.vista_actual = MainView(self.root, self.servicio, on_logout=self.mostrar_login)
+
 def main():
-    restaurante = Restaurante()
+    root = tk.Tk()
+    app = AppController(root)
+    root.mainloop()
 
-    while True:
-        print("\n==========================================")
-        print("       SISTEMA RESTAURANTE - SEMANA 12    ")
-        print("==========================================")
-        print("1. Registrar usuario")
-        print("2. Registrar producto")
-        print("3. Buscar producto por código")
-        print("4. Buscar usuario por identificación")
-        print("5. Realizar venta")
-        print("6. Consultar ventas por usuario")
-        print("7. Listar todos los productos")
-        print("8. Ejecutar prueba de rendimiento (Métricas)")
-        print("9. Salir")
-        print("==========================================")
-
-        opcion = input("Seleccione una opción (1-9): ").strip()
-
-        if opcion == "1":
-            registrar_usuario_menu(restaurante)
-        elif opcion == "2":
-            registrar_producto_menu(restaurante)
-        elif opcion == "3":
-            buscar_producto_menu(restaurante)
-        elif opcion == "4":
-            buscar_usuario_menu(restaurante)
-        elif opcion == "5":
-            realizar_venta_menu(restaurante)
-        elif opcion == "6":
-            consultar_ventas_menu(restaurante)
-        elif opcion == "7":
-            listar_productos_menu(restaurante)
-        elif opcion == "8":
-            ejecutar_prueba_rendimiento(restaurante)
-        elif opcion == "9":
-            print(">> Saliendo del sistema...")
-            break
-        else:
-            print(">> Opción no válida. Intente de nuevo.")
+if __name__ == "__main__":
+    main()

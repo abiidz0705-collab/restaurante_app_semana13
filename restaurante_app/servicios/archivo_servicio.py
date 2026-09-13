@@ -1,67 +1,31 @@
 import json
 import os
-from typing import List
-from modelos.producto import Producto
-from modelos.usuario import Usuario
-from modelos.venta import Venta
 
 class ArchivoServicio:
-    # Ruta relativa al directorio donde está ubicado este archivo
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     DIR_DATOS = os.path.join(BASE_DIR, "datos")
     
     RUTA_PRODUCTOS = os.path.join(DIR_DATOS, "productos.json")
     RUTA_USUARIOS = os.path.join(DIR_DATOS, "usuarios.json")
-    RUTA_VENTAS = os.path.join(DIR_DATOS, "ventas.json")
 
     def __init__(self):
         if not os.path.exists(self.DIR_DATOS):
             os.makedirs(self.DIR_DATOS, exist_ok=True)
 
-    def guardar_productos(self, productos: List[Producto]):
-        try:
-            with open(self.RUTA_PRODUCTOS, "w", encoding="utf-8") as f:
-                json.dump([p.a_diccionario() for p in productos], f, indent=4, ensure_ascii=False)
-        except IOError as e:
-            print(f"Error al guardar productos: {e}")
-
-    def cargar_productos(self) -> List[Producto]:
+    def cargar_productos(self) -> list:
         if not os.path.exists(self.RUTA_PRODUCTOS):
             return []
         try:
             with open(self.RUTA_PRODUCTOS, "r", encoding="utf-8") as f:
-                return [Producto.desde_diccionario(item) for item in json.load(f)]
+                return json.load(f)
         except Exception:
             return []
 
-    def guardar_usuarios(self, usuarios: List[Usuario]):
-        try:
-            with open(self.RUTA_USUARIOS, "w", encoding="utf-8") as f:
-                json.dump([u.a_diccionario() for u in usuarios], f, indent=4, ensure_ascii=False)
-        except IOError as e:
-            print(f"Error al guardar usuarios: {e}")
-
-    def cargar_usuarios(self) -> List[Usuario]:
+    def cargar_usuarios(self) -> list:
         if not os.path.exists(self.RUTA_USUARIOS):
             return []
         try:
             with open(self.RUTA_USUARIOS, "r", encoding="utf-8") as f:
-                return [Usuario.desde_diccionario(item) for item in json.load(f)]
-        except Exception:
-            return []
-
-    def guardar_ventas(self, ventas: List[Venta]):
-        try:
-            with open(self.RUTA_VENTAS, "w", encoding="utf-8") as f:
-                json.dump([v.a_diccionario() for v in ventas], f, indent=4, ensure_ascii=False)
-        except IOError as e:
-            print(f"Error al guardar ventas: {e}")
-
-    def cargar_ventas(self) -> List[Venta]:
-        if not os.path.exists(self.RUTA_VENTAS):
-            return []
-        try:
-            with open(self.RUTA_VENTAS, "r", encoding="utf-8") as f:
-                return [Venta.desde_diccionario(item) for item in json.load(f)]
+                return json.load(f)
         except Exception:
             return []
