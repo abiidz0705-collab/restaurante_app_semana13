@@ -1,15 +1,16 @@
 class Producto:
-    def __init__(self, codigo: str, nombre: str, precio: float, stock: int):
-        self.codigo = codigo
+    def __init__(self, id_prod, nombre, precio, categoria="General"):
+        self.id_prod = id_prod
+        self.id = id_prod  # Guardamos ambos para evitar cualquier desfase
         self.nombre = nombre
-        self.precio = precio
-        self.stock = stock
+        self.precio = float(precio)
+        self.categoria = categoria
 
-    @classmethod
-    def desde_diccionario(cls, datos: dict):
-        return cls(
-            codigo=datos["codigo"],
-            nombre=datos["nombre"],
-            precio=float(datos["precio"]),
-            stock=int(datos["stock"])
-        )
+    def to_dict(self):
+        return {
+            "id": self.id_prod,
+            "id_prod": self.id_prod,
+            "nombre": self.nombre,
+            "precio": self.precio,
+            "categoria": self.categoria
+        }

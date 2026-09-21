@@ -21,6 +21,14 @@ class ArchivoServicio:
         except Exception:
             return []
 
+    def guardar_productos(self, lista_productos: list) -> bool:
+        try:
+            with open(self.RUTA_PRODUCTOS, "w", encoding="utf-8") as f:
+                json.dump(lista_productos, f, ensure_ascii=False, indent=4)
+            return True
+        except Exception:
+            return False
+
     def cargar_usuarios(self) -> list:
         if not os.path.exists(self.RUTA_USUARIOS):
             return []
